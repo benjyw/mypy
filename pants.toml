@@ -1,3 +1,9 @@
 [GLOBAL]
 pants_version = "2.4.0.dev0"
 backend_packages = ["pants.backend.python"]
+
+[python-infer]
+inits = true
+
+[pytest]
+config = "pytest.ini"
