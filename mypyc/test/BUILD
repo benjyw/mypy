@@ -8,5 +8,6 @@ python_tests(
         "mypy/dmypy/__main__.py",
         "mypy/test/data.py",
         "mypyc/external/googletest",
+        "mypyc/lib-rt",
     ],
 )

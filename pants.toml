@@ -1,6 +1,7 @@
 [GLOBAL]
 pants_version = "2.4.0.dev0"
 backend_packages = ["pants.backend.python"]
+pants_ignore.add = ["!include/"]  # So we don't ignore `mypyc/external/googletest/include/`.
 
 [python-infer]
 inits = true
