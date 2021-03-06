@@ -3,6 +3,7 @@ pants_version = "2.4.0.dev0"
 backend_packages = [
     "pants.backend.python",
     "pants.backend.python.lint.flake8",
+    "pants.backend.python.typecheck.mypy",
 ]
 pants_ignore.add = ["!include/"]  # So we don't ignore `mypyc/external/googletest/include/`.
 
@@ -19,3 +20,7 @@ config = "pytest.ini"
 
 [flake8]
 config = "setup.cfg"
+
+[mypy]
+config = "mypy_self_check.ini"
+source_plugins = ["misc/proper_plugin.py"]
