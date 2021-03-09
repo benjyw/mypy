@@ -24,3 +24,12 @@ python_library(
         "mypy/typeshed/stdlib:stdlib_py2",
     ]
 )
+
+pex_binary(
+    name="bin",
+    dependencies=[
+        ":py3",
+        "mypy/__main__.py",
+    ],
+    entry_point="mypy"
+)
