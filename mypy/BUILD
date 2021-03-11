@@ -3,6 +3,9 @@ python_library(
     dependencies=[
         "//:types-mypy-extensions",
         "//:types-typing-extensions",
+        "//:types-typed-ast",
+        "//:types-toml",
+        "//:types-enum34",
         "mypy/xml",
     ]
 )
@@ -13,7 +16,8 @@ python_library(
     dependencies=[
         ":mypy",
         "mypy/typeshed/stdlib",
-    ]
+    ],
+    interpreter_constraints=[">=3.7"],
 )
 
 python_library(
@@ -28,8 +32,11 @@ python_library(
 pex_binary(
     name="bin",
     dependencies=[
+        ":py2",
         ":py3",
         "mypy/__main__.py",
+        "//:pytest",
     ],
-    entry_point="mypy"
+    entry_point="mypy",
+    execution_mode="venv",
 )
