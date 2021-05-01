@@ -36,7 +36,7 @@ target module can be found):
 
 .. code-block:: python
 
-    # Error: Module 'os' has no attribute 'non_existent'  [attr-defined]
+    # Error: Module "os" has no attribute "non_existent"  [attr-defined]
     from os import non_existent
 
 A reference to a missing attribute is given the ``Any`` type. In the
@@ -87,7 +87,7 @@ This example accidentally calls ``sort()`` instead of :py:func:`sorted`:
 
 .. code-block:: python
 
-    x = sort([3, 2, 4])  # Error: Name 'sort' is not defined  [name-defined]
+    x = sort([3, 2, 4])  # Error: Name "sort" is not defined  [name-defined]
 
 Check arguments in calls [call-arg]
 -----------------------------------
@@ -450,7 +450,7 @@ In this example the definitions of ``x`` and ``y`` are circular:
 
    class Problem:
        def set_x(self) -> None:
-           # Error: Cannot determine type of 'y'  [has-type]
+           # Error: Cannot determine type of "y"  [has-type]
            self.x = self.y
 
        def set_y(self) -> None:
@@ -508,7 +508,7 @@ Example:
    class A:
        def __init__(self, x: int) -> None: ...
 
-   class A:  # Error: Name 'A' already defined on line 1  [no-redef]
+   class A:  # Error: Name "A" already defined on line 1  [no-redef]
        def __init__(self, x: str) -> None: ...
 
    # Error: Argument 1 to "A" has incompatible type "str"; expected "int"
@@ -565,7 +565,7 @@ Example:
 
         ...  # No "save" method
 
-    # Error: Cannot instantiate abstract class 'Thing' with abstract attribute 'save'  [abstract]
+    # Error: Cannot instantiate abstract class "Thing" with abstract attribute "save"  [abstract]
     t = Thing()
 
 Check the target of NewType [valid-newtype]
@@ -658,7 +658,7 @@ consistently when using the call-based syntax. Example:
 
     from typing import NamedTuple
 
-    # Error: First argument to namedtuple() should be 'Point2D', not 'Point'
+    # Error: First argument to namedtuple() should be "Point2D", not "Point"
     Point2D = NamedTuple("Point", [("x", int), ("y", int)])
 
 Report syntax errors [syntax]

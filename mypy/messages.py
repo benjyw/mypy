@@ -31,7 +31,7 @@ from mypy.nodes import (
     FuncDef, reverse_builtin_aliases,
     ARG_POS, ARG_OPT, ARG_NAMED, ARG_NAMED_OPT, ARG_STAR, ARG_STAR2,
     ReturnStmt, NameExpr, Var, CONTRAVARIANT, COVARIANT, SymbolNode,
-    CallExpr, SymbolTable, TempNode
+    CallExpr, IndexExpr, StrExpr, SymbolTable, TempNode
 )
 from mypy.subtypes import (
     is_subtype, find_member, get_member_flags,
@@ -536,7 +536,6 @@ class MessageBuilder:
                 arg_name = outer_context.arg_names[n - 1]
                 if arg_name is not None:
                     arg_label = '"{}"'.format(arg_name)
-
             if (arg_kind == ARG_STAR2
                     and isinstance(arg_type, TypedDictType)
                     and m <= len(callee.arg_names)
@@ -549,9 +548,14 @@ class MessageBuilder:
                     expected_type,
                     bare=True)
                 arg_label = '"{}"'.format(arg_name)
-            msg = 'Argument {} {}has incompatible type {}; expected {}'.format(
-                arg_label, target, quote_type_string(arg_type_str),
-                quote_type_string(expected_type_str))
+            if isinstance(outer_context, IndexExpr) and isinstance(outer_context.index, StrExpr):
+                msg = 'Value of "{}" has incompatible type {}; expected {}' .format(
+                    outer_context.index.value, quote_type_string(arg_type_str),
+                    quote_type_string(expected_type_str))
+            else:
+                msg = 'Argument {} {}has incompatible type {}; expected {}'.format(
+                    arg_label, target, quote_type_string(arg_type_str),
+                    quote_type_string(expected_type_str))
             code = codes.ARG_TYPE
             expected_type = get_proper_type(expected_type)
             if isinstance(expected_type, UnionType):
@@ -572,9 +576,16 @@ class MessageBuilder:
                                    callee_type: ProperType,
                                    context: Context,
                                    code: Optional[ErrorCode]) -> None:
-        if (isinstance(original_caller_type, (Instance, TupleType, TypedDictType)) and
-                isinstance(callee_type, Instance) and callee_type.type.is_protocol):
-            self.report_protocol_problems(original_caller_type, callee_type, context, code=code)
+        if isinstance(original_caller_type, (Instance, TupleType, TypedDictType)):
+            if isinstance(callee_type, Instance) and callee_type.type.is_protocol:
+                self.report_protocol_problems(original_caller_type, callee_type,
+                                              context, code=code)
+            if isinstance(callee_type, UnionType):
+                for item in callee_type.items:
+                    item = get_proper_type(item)
+                    if isinstance(item, Instance) and item.type.is_protocol:
+                        self.report_protocol_problems(original_caller_type, item,
+                                                      context, code=code)
         if (isinstance(callee_type, CallableType) and
                 isinstance(original_caller_type, Instance)):
             call = find_member('__call__', original_caller_type, original_caller_type,
@@ -747,7 +758,7 @@ class MessageBuilder:
         self.fail("Unpacking a string is disallowed", context)
 
     def type_not_iterable(self, type: Type, context: Context) -> None:
-        self.fail('\'{}\' object is not iterable'.format(type), context)
+        self.fail('"{}" object is not iterable'.format(type), context)
 
     def incompatible_operator_assignment(self, op: str,
                                          context: Context) -> None:
@@ -902,10 +913,10 @@ class MessageBuilder:
                   code=codes.STRING_FORMATTING)
 
     def cannot_determine_type(self, name: str, context: Context) -> None:
-        self.fail("Cannot determine type of '%s'" % name, context, code=codes.HAS_TYPE)
+        self.fail('Cannot determine type of "%s"' % name, context, code=codes.HAS_TYPE)
 
     def cannot_determine_type_in_base(self, name: str, base: str, context: Context) -> None:
-        self.fail("Cannot determine type of '%s' in base class '%s'" % (name, base), context)
+        self.fail('Cannot determine type of "%s" in base class "%s"' % (name, base), context)
 
     def no_formal_self(self, name: str, item: CallableType, context: Context) -> None:
         self.fail('Attribute function "%s" with type %s does not accept self argument'
@@ -924,9 +935,9 @@ class MessageBuilder:
     def cannot_instantiate_abstract_class(self, class_name: str,
                                           abstract_attributes: List[str],
                                           context: Context) -> None:
-        attrs = format_string_list(["'%s'" % a for a in abstract_attributes])
-        self.fail("Cannot instantiate abstract class '%s' with abstract "
-                  "attribute%s %s" % (class_name, plural_s(abstract_attributes),
+        attrs = format_string_list(['"%s"' % a for a in abstract_attributes])
+        self.fail('Cannot instantiate abstract class "%s" with abstract '
+                  'attribute%s %s' % (class_name, plural_s(abstract_attributes),
                                    attrs),
                   context, code=codes.ABSTRACT)
 
@@ -1058,7 +1069,7 @@ class MessageBuilder:
         self.fail('Invalid signature "{}" for "{}"'.format(func_type, method_name), context)
 
     def reveal_type(self, typ: Type, context: Context) -> None:
-        self.note('Revealed type is \'{}\''.format(typ), context)
+        self.note('Revealed type is "{}"'.format(typ), context)
 
     def reveal_locals(self, type_map: Dict[str, Optional[Type]], context: Context) -> None:
         # To ensure that the output is predictable on Python < 3.6,
@@ -1157,7 +1168,7 @@ class MessageBuilder:
             item_name: str,
             context: Context) -> None:
         if typ.is_anonymous():
-            self.fail('\'{}\' is not a valid TypedDict key; expected one of {}'.format(
+            self.fail('"{}" is not a valid TypedDict key; expected one of {}'.format(
                 item_name, format_item_name_list(typ.items.keys())), context)
         else:
             self.fail('TypedDict {} has no key "{}"'.format(
@@ -2077,7 +2088,7 @@ def append_invariance_notes(notes: List[str], arg_type: Instance,
     if invariant_type and covariant_suggestion:
         notes.append(
             '"{}" is invariant -- see '.format(invariant_type) +
-            'http://mypy.readthedocs.io/en/latest/common_issues.html#variance')
+            "https://mypy.readthedocs.io/en/stable/common_issues.html#variance")
         notes.append(covariant_suggestion)
     return notes
 
@@ -2114,11 +2125,11 @@ def make_inferred_type_note(context: Context,
 
 
 def format_key_list(keys: List[str], *, short: bool = False) -> str:
-    reprs = [repr(key) for key in keys]
+    formatted_keys = ['"{}"'.format(key) for key in keys]
     td = '' if short else 'TypedDict '
     if len(keys) == 0:
         return 'no {}keys'.format(td)
     elif len(keys) == 1:
-        return '{}key {}'.format(td, reprs[0])
+        return '{}key {}'.format(td, formatted_keys[0])
     else:
-        return '{}keys ({})'.format(td, ', '.join(reprs))
+        return '{}keys ({})'.format(td, ', '.join(formatted_keys))
