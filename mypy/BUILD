@@ -35,8 +35,6 @@ pex_binary(
         ":py2",
         ":py3",
         "mypy/__main__.py",
-        "//:importlib-metadata",
-        "//:pytest",
     ],
     entry_point="mypy",
     execution_mode="venv",
