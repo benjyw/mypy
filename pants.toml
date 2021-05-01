@@ -1,5 +1,5 @@
 [GLOBAL]
-pants_version = "2.4.0.dev0"
+pants_version = "2.5.0.dev3"
 backend_packages = [
     "pants.backend.python",
     "pants.backend.python.lint.flake8",
@@ -24,3 +24,7 @@ config = "setup.cfg"
 [mypy]
 config = "mypy_self_check.ini"
 source_plugins = ["misc/proper_plugin.py"]
+
+[anonymous-telemetry]
+enabled = true
+repo_id = "28671EA0-75D9-42E7-BEFA-5A68736E0419"
