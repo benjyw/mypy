@@ -20,4 +20,5 @@ pex_binary(
     ],
     entry_point="mypy",
     execution_mode="venv",
+    interpreter_constraints=[">=3.7"],
 )
