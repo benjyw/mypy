@@ -1,0 +1,8 @@
+python_library(
+  dependencies = [":native"]
+)
+
+files(
+  name="native",
+  sources=["*.h", "*.c", "*.cc", "*.tmpl"]
+)

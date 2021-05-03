@@ -1,0 +1,30 @@
+[GLOBAL]
+pants_version = "2.5.0.dev3"
+backend_packages = [
+    "pants.backend.python",
+    "pants.backend.python.lint.flake8",
+    "pants.backend.python.typecheck.mypy",
+]
+pants_ignore.add = ["!include/"]  # So we don't ignore `mypyc/external/googletest/include/`.
+
+# TODO: This is a bandaid for https://github.com/pantsbuild/pants/issues/7022.
+pantsd_invalidation_globs = [
+    "*-requirements.txt"
+]
+
+[python-infer]
+inits = true
+
+[pytest]
+config = "pytest.ini"
+
+[flake8]
+config = "setup.cfg"
+
+[mypy]
+config = "mypy_self_check.ini"
+source_plugins = ["misc/proper_plugin.py"]
+
+[anonymous-telemetry]
+enabled = true
+repo_id = "28671EA0-75D9-42E7-BEFA-5A68736E0419"
